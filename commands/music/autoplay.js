@@ -10,11 +10,17 @@ export default {
 
         if (!player) {
             const embed = createEmbed()
-                .setDescription(`${emoji.error} Nothing is playing!`);
+                .setDescription(`${emoji.error} No player found!`);
             return message.channel.send({ embeds: [embed] });
         }
 
-        if (!message.member.voice.channel || message.member.voice.channel.id !== player.voiceChannel) {
+        if (!message.member.voice.channel) {
+            const embed = createEmbed()
+                .setDescription(`${emoji.error} You need to be in a voice channel!`);
+            return message.channel.send({ embeds: [embed] });
+        }
+
+        if (player.voiceChannel !== message.member.voice.channel.id) {
             const embed = createEmbed()
                 .setDescription(`${emoji.error} You need to be in the same voice channel!`);
             return message.channel.send({ embeds: [embed] });
@@ -23,13 +29,7 @@ export default {
         player.isAutoplay = !player.isAutoplay;
 
         const embed = createEmbed()
-            .setDescription(`${emoji.shuffle} Autoplay is now **${player.isAutoplay ? 'enabled' : 'disabled'}**`)
-            .addFields({
-                name: `${emoji.info} Info`,
-                value: player.isAutoplay 
-                    ? 'The bot will automatically play related songs when the queue ends.' 
-                    : 'The bot will stop playing when the queue ends.'
-            });
+            .setDescription(`${emoji.shuffle} Autoplay is now **${player.isAutoplay ? 'enabled' : 'disabled'}**!`);
 
         message.channel.send({ embeds: [embed] });
     }

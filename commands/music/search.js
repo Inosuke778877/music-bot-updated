@@ -154,6 +154,7 @@ export default {
                 const selectedTracks = selectedIndexes.map(i => results[i]);
 
                 for (const result of selectedTracks) {
+                    result.track.requester = message.author;
                     player.queue.add(result.track);
                 }
 

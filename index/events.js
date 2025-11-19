@@ -19,72 +19,77 @@ function formatTime(ms) {
 }
 
 export async function initializeEvents(client) {
-    client.riffy.on("trackStart", async (player, track) => {
-        const channel = client.channels.cache.get(player.textChannel);
-        if (!channel) return;
+client.riffy.on("trackStart", async (player, track) => {
+    const channel = client.channels.cache.get(player.textChannel);
+    if (!channel) return;
 
-        try {
-            const thumbnail = getThumbnail(track);
-            
-            const musicCard = await Dynamic({
-                thumbnailImage: thumbnail || 'https://cdn.discordapp.com/attachments/1220001571228880917/1220001571690123284/01.png',
-                backgroundImage: thumbnail || 'https://cdn.discordapp.com/attachments/1220001571228880917/1220001571690123284/01.png',
-                imageDarkness: 60,
-                backgroundColor: '#070707',
-                progress: 0,
-                progressColor: '#00FF00',
-                progressBarColor: '#5F2D00',
-                name: track.info.title.length > 30 ? track.info.title.substring(0, 30) + '...' : track.info.title,
-                nameColor: '#00FF00',
-                author: track.info.author.length > 30 ? track.info.author.substring(0, 30) + '...' : track.info.author,
-                authorColor: '#696969',
+    try {
+        const thumbnail = getThumbnail(track);
+        
+        const musicCard = await Dynamic({
+            thumbnailImage: thumbnail || 'https://cdn.discordapp.com/attachments/1220001571228880917/1220001571690123284/01.png',
+            backgroundImage: thumbnail || 'https://cdn.discordapp.com/attachments/1220001571228880917/1220001571690123284/01.png',
+            imageDarkness: 60,
+            backgroundColor: '#070707',
+            progress: 0,
+            progressColor: '#00FF00',
+            progressBarColor: '#5F2D00',
+            name: track.info.title.length > 30 ? track.info.title.substring(0, 30) + '...' : track.info.title,
+            nameColor: '#00FF00',
+            author: track.info.author.length > 30 ? track.info.author.substring(0, 30) + '...' : track.info.author,
+            authorColor: '#696969',
+        });
+
+        const attachment = new AttachmentBuilder(musicCard, { name: 'musiccard.png' });
+
+        const embed = createEmbed()
+            .setTitle(`${emoji.music} Now Playing`)
+            .setDescription(`**[${track.info.title}](${track.info.uri})**`)
+            .addFields(
+                { name: `${emoji.author} Author`, value: track.info.author, inline: true },
+                { name: `${emoji.duration} Duration`, value: formatTime(track.info.length), inline: true },
+                { name: `${emoji.info} Source`, value: track.info.sourceName || 'Unknown', inline: true }
+            )
+            .setImage('attachment://musiccard.png');
+
+        if (track.requester && track.requester.displayAvatarURL) {
+            const avatarURL = track.requester.displayAvatarURL({ dynamic: true, size: 256 });
+            embed.setThumbnail(avatarURL);
+            embed.setFooter({ 
+                text: `Requested by ${track.requester.tag || track.requester.username}`,
+                iconURL: avatarURL
             });
-
-            const attachment = new AttachmentBuilder(musicCard, { name: 'musiccard.png' });
-
-            const embed = createEmbed()
-                .setTitle(`${emoji.music} Now Playing`)
-                .setDescription(`**[${track.info.title}](${track.info.uri})**`)
-                .addFields(
-                    { name: `${emoji.author} Author`, value: track.info.author, inline: true },
-                    { name: `${emoji.duration} Duration`, value: formatTime(track.info.length), inline: true },
-                    { name: `${emoji.info} Source`, value: track.info.sourceName || 'Unknown', inline: true }
-                )
-                .setImage('attachment://musiccard.png');
-
-            if (track.requester) {
-                embed.setFooter({ 
-                    text: `Requested by ${track.requester.tag}`, 
-                    iconURL: track.requester.displayAvatarURL() 
-                });
-            }
-
-            channel.send({ embeds: [embed], files: [attachment] }).catch(console.error);
-        } catch (error) {
-            console.error('Error creating music card:', error);
-            
-            const embed = createEmbed()
-                .setTitle(`${emoji.music} Now Playing`)
-                .setDescription(`**[${track.info.title}](${track.info.uri})**`)
-                .addFields(
-                    { name: `${emoji.author} Author`, value: track.info.author, inline: true },
-                    { name: `${emoji.duration} Duration`, value: formatTime(track.info.length), inline: true },
-                    { name: `${emoji.info} Source`, value: track.info.sourceName || 'Unknown', inline: true }
-                );
-
-            const thumbnail = getThumbnail(track);
-            if (thumbnail) embed.setThumbnail(thumbnail);
-
-            if (track.requester) {
-                embed.setFooter({ 
-                    text: `Requested by ${track.requester.tag}`, 
-                    iconURL: track.requester.displayAvatarURL() 
-                });
-            }
-
-            channel.send({ embeds: [embed] }).catch(console.error);
         }
-    });
+
+        channel.send({ embeds: [embed], files: [attachment] }).catch(console.error);
+    } catch (error) {
+        console.error('Error creating music card:', error);
+        
+        const embed = createEmbed()
+            .setTitle(`${emoji.music} Now Playing`)
+            .setDescription(`**[${track.info.title}](${track.info.uri})**`)
+            .addFields(
+                { name: `${emoji.author} Author`, value: track.info.author, inline: true },
+                { name: `${emoji.duration} Duration`, value: formatTime(track.info.length), inline: true },
+                { name: `${emoji.info} Source`, value: track.info.sourceName || 'Unknown', inline: true }
+            );
+
+        const trackThumbnail = getThumbnail(track);
+        if (trackThumbnail) embed.setImage(trackThumbnail);
+
+        if (track.requester && track.requester.displayAvatarURL) {
+            const avatarURL = track.requester.displayAvatarURL({ dynamic: true, size: 256 });
+            embed.setThumbnail(avatarURL);
+            embed.setFooter({ 
+                text: `Requested by ${track.requester.tag || track.requester.username}`,
+                iconURL: avatarURL
+            });
+        }
+
+        channel.send({ embeds: [embed] }).catch(console.error);
+    }
+});
+
 
     client.riffy.on("queueEnd", async (player) => {
         const channel = client.channels.cache.get(player.textChannel);

@@ -1,12 +1,11 @@
-import Playlist from '../../models/Playlist.js';
+import Guild from '../../models/Guild.js';
 import emoji from '../../utils/emoji.js';
 import { createEmbed } from '../../utils/embedBuilder.js';
-import { getThumbnail } from '../../utils/getThumbnail.js';
 
 export default {
-    name: 'loadplaylist',
-    aliases: ['loadpl'],
-    description: 'Load a playlist',
+    name: 'load',
+    aliases: ['pl-load'],
+    description: 'Load and play a saved playlist',
     execute: async (message, args, client) => {
         if (!message.member.voice.channel) {
             const embed = createEmbed()
@@ -16,68 +15,76 @@ export default {
 
         if (!args[0]) {
             const embed = createEmbed()
-                .setDescription(`${emoji.error} Please provide a playlist name!`);
+                .setDescription(`${emoji.error} Please provide a playlist name!\nUsage: \`${client.prefix}load <playlist name>\``);
             return message.channel.send({ embeds: [embed] });
         }
 
-        const name = args.join(' ');
+        const playlistName = args.join(' ').toLowerCase();
 
-        const playlist = await Playlist.findOne({ userId: message.author.id, name });
+        try {
+            const guildData = await Guild.findOne({ guildId: message.guild.id });
 
-        if (!playlist) {
-            const embed = createEmbed()
-                .setDescription(`${emoji.error} Playlist not found!`);
-            return message.channel.send({ embeds: [embed] });
-        }
+            if (!guildData || !guildData.playlists || guildData.playlists.length === 0) {
+                const embed = createEmbed()
+                    .setDescription(`${emoji.error} No playlists found for this server!`);
+                return message.channel.send({ embeds: [embed] });
+            }
 
-        if (!playlist.tracks.length) {
-            const embed = createEmbed()
-                .setDescription(`${emoji.error} This playlist is empty!`);
-            return message.channel.send({ embeds: [embed] });
-        }
+            const playlistData = guildData.playlists.find(pl => pl.name.toLowerCase() === playlistName);
 
-        let player = client.riffy.players.get(message.guild.id);
+            if (!playlistData) {
+                const embed = createEmbed()
+                    .setDescription(`${emoji.error} Playlist **${playlistName}** not found!`);
+                return message.channel.send({ embeds: [embed] });
+            }
 
-        if (!player) {
-            player = client.riffy.createConnection({
-                guildId: message.guild.id,
-                voiceChannel: message.member.voice.channel.id,
-                textChannel: message.channel.id,
-                deaf: true
-            });
-        }
+            let player = client.riffy.players.get(message.guild.id);
 
-        let firstTrack = null;
+            if (!player) {
+                player = client.riffy.createConnection({
+                    guildId: message.guild.id,
+                    voiceChannel: message.member.voice.channel.id,
+                    textChannel: message.channel.id,
+                    deaf: true
+                });
+            }
 
-        for (const track of playlist.tracks) {
-            const resolve = await client.riffy.resolve({ query: track.uri, requester: message.author });
-            if (resolve && resolve.tracks.length) {
-                player.queue.add(resolve.tracks[0]);
-                if (!firstTrack) {
-                    firstTrack = resolve.tracks[0];
+            const loadingEmbed = createEmbed()
+                .setDescription(`${emoji.load} Loading playlist **${playlistData.name}**...`);
+            const msg = await message.channel.send({ embeds: [loadingEmbed] });
+
+            let loaded = 0;
+            for (const trackData of playlistData.tracks) {
+                try {
+                    const result = await client.riffy.resolve({ 
+                        query: trackData.uri, 
+                        requester: message.author 
+                    });
+                    
+                    if (result && result.tracks && result.tracks.length > 0) {
+                        const track = result.tracks[0];
+                        track.requester = message.author;
+                        player.queue.add(track);
+                        loaded++;
+                    }
+                } catch (err) {
+                    console.error(`Failed to load track ${trackData.title}:`, err);
                 }
             }
-        }
 
-        const embed = createEmbed()
-            .setTitle(`${emoji.load} Loaded Playlist`)
-            .setDescription(`**${name}**`)
-            .addFields(
-                { name: `${emoji.music} Tracks`, value: `${playlist.tracks.length}`, inline: true }
-            );
+            const embed = createEmbed()
+                .setDescription(`${emoji.success} Loaded **${loaded}/${playlistData.tracks.length}** tracks from playlist **${playlistData.name}**!`);
+            await msg.edit({ embeds: [embed] });
 
-        // Add thumbnail from first track
-        if (firstTrack) {
-            const thumbnail = getThumbnail(firstTrack);
-            if (thumbnail) {
-                embed.setThumbnail(thumbnail);
+            if (!player.playing && !player.paused) {
+                player.play();
             }
-        }
 
-        message.channel.send({ embeds: [embed] });
-
-        if (!player.playing && !player.paused) {
-            player.play();
+        } catch (error) {
+            console.error('Load playlist error:', error);
+            const embed = createEmbed()
+                .setDescription(`${emoji.error} Failed to load playlist!`);
+            message.channel.send({ embeds: [embed] });
         }
     }
 };

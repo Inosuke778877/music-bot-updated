@@ -1,7 +1,6 @@
 import { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import emoji from '../../utils/emoji.js';
 import { createEmbed } from '../../utils/embedBuilder.js';
-import { readdirSync } from 'fs';
 
 export default {
     name: 'help',
@@ -63,13 +62,20 @@ export default {
             )
             .setFooter({ text: `Use ${client.prefix}help <command> for detailed info` });
 
-        const options = Object.keys(categories).map(cat => 
+        const options = [
             new StringSelectMenuOptionBuilder()
-                .setLabel(cat.charAt(0).toUpperCase() + cat.slice(1))
-                .setDescription(`View ${categories[cat].length} ${cat} commands`)
-                .setValue(cat)
-                .setEmoji(categoryEmojis[cat] || '📂')
-        );
+                .setLabel('Home')
+                .setDescription('Return to main help menu')
+                .setValue('home')
+                .setEmoji('<:home:1440726240305615028>'),
+            ...Object.keys(categories).map(cat => 
+                new StringSelectMenuOptionBuilder()
+                    .setLabel(cat.charAt(0).toUpperCase() + cat.slice(1))
+                    .setDescription(`View ${categories[cat].length} ${cat} commands`)
+                    .setValue(cat)
+                    .setEmoji(categoryEmojis[cat] || '📂')
+            )
+        ];
 
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('help_category')
@@ -90,7 +96,14 @@ export default {
 
             await interaction.deferUpdate();
 
-            const category = interaction.values[0];
+            const selection = interaction.values[0];
+
+            if (selection === 'home') {
+                await helpMsg.edit({ embeds: [mainEmbed], components: [row] });
+                return;
+            }
+
+            const category = selection;
             const commands = categories[category];
 
             const categoryEmbed = createEmbed()

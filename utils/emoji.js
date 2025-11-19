@@ -1,5 +1,5 @@
 export default {
-    music: '',
+    music: '<:emoji_29:1414633857998651454>',
     success: '<:emoji_19:1414630505529213030>',
     error: '<:emoji_20:1414630532502917220>',
     warning: '<:emoji_22:1414630904877551676>',
@@ -12,18 +12,18 @@ export default {
     shuffle: '<:shuffle:1424004241625972807>',
     loop: '<:loop:1424003917917716551>',
     volume: '<:volumehigh:1423352036644098111>',
-    search: 'n13:1439991912068022303>',
+    search: '<:search:1440722561674510357>',
     queue: '<:shuffle:1424004241625972807>',
-    duration: '<a:loading:1423352090641698866>',
+    duration: '<:emoji_36:1414635011990360064>',
     author: '<:emoji_37:1414635203934294138>',
-    filter: '<:1340687600658153575:1349335350270492712>',
+    filter: '<:filter:1440725312374706288>',
     playlist: '<:emoji_29:1414633857998651454>',
     add: '<:emoji_34:1414634742820769822>',
     remove: '<:emoji_34:1414634762147991562>',
     load: '<:discotoolsxyzicon4:1415193718193127474>',
     save: '<:discotoolsxyzicon5:1415193715420561471>',
-    youtube: '▶️',
-    spotify: '🟢',
-    applemusic: '🍎',
-    deezer: '🔵'
+    youtube: '<:youtube:1440723090509135995>',
+    spotify: '<:spotify:1440723708338638859>',
+    applemusic: '<:apple:1440723220469776515>',
+    deezer: '<:deezer:1440723528360923236>'
 };
