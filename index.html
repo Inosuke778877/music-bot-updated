@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Bot - Running</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #070707 0%, #1a1a1a 100%);
+            color: #00FF00;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            background: rgba(0, 255, 0, 0.05);
+            padding: 60px 40px;
+            border-radius: 20px;
+            border: 2px solid #00FF00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00FF00;
+        }
+        .status {
+            font-size: 24px;
+            margin: 20px 0;
+            opacity: 0.8;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .info {
+            margin-top: 30px;
+            font-size: 18px;
+            line-height: 2;
+        }
+        .info span {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Music Bot</h1>
+        <div class="status pulse">✅ Bot Running</div>
+        <div class="info">
+            <div><span>Status:</span> Online</div>
+            <div><span>Type:</span> Discord Music Bot</div>
+            <div><span>Port:</span> 3000</div>
+        </div>
+    </div>
+</body>
+</html>

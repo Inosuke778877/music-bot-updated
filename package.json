@@ -1,0 +1,20 @@
+{
+  "name": "spotify-bot",
+  "module": "index.js",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "discord.js": "^14.24.2",
+    "dotenv": "^17.2.3",
+    "mongoose": "^8.19.4",
+    "musicard": "^2.0.5",
+    "riffy": "^1.0.8",
+    "spotify-bot": "."
+  }
+}
