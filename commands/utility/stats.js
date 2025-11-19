@@ -25,6 +25,8 @@ export default {
         let totalQueued = 0;
         let totalPlaying = 0;
 
+        let nodes = 1;
+
         client.riffy.players.forEach(player => {
             totalQueued += player.queue.length;
             if (player.playing) totalPlaying++;
@@ -48,7 +50,7 @@ export default {
                     inline: true
                 },
                 {
-                    name: `📊 Bot Stats`,
+                    name: `<:emoji_37:1414635203934294138> Bot Stats`,
                     value: [
                         `**Guilds:** ${client.guilds.cache.size}`,
                         `**Users:** ${totalUsers.toLocaleString()}`,
@@ -63,12 +65,12 @@ export default {
                         `**Active Players:** ${activePlayers}`,
                         `**Playing Now:** ${totalPlaying}`,
                         `**Queued Tracks:** ${totalQueued}`,
-                        `**Lavalink Nodes:** ${client.riffy.nodes.size}`
+                        `**Lavalink Nodes:** ${nodes}`
                     ].join('\n'),
                     inline: true
                 },
                 {
-                    name: `💾 System`,
+                    name: `<:discotoolsxyzicon5:1415193715420561471> System`,
                     value: [
                         `**Memory:** ${memoryUsed}MB / ${memoryTotal}MB`,
                         `**Usage:** ${memoryPercent}%`,
@@ -78,7 +80,7 @@ export default {
                     inline: true
                 },
                 {
-                    name: `🔧 System Info`,
+                    name: `<:shuffle:1424004241625972807> System Info`,
                     value: [
                         `**OS:** ${os.type()} ${os.release()}`,
                         `**CPU Cores:** ${os.cpus().length}`,
