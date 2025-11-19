@@ -17,7 +17,7 @@ export default {
     duration: '<:emoji_36:1414635011990360064>',
     author: '<:emoji_37:1414635203934294138>',
     filter: '<:filter:1440725312374706288>',
-    playlist: '<:emoji_29:1414633857998651454>',
+    playlist: '<:discotoolsxyzicon5:1415193715420561471>',
     add: '<:emoji_34:1414634742820769822>',
     remove: '<:emoji_34:1414634762147991562>',
     load: '<:discotoolsxyzicon4:1415193718193127474>',

@@ -1,4 +1,5 @@
-import { AttachmentBuilder } from 'discord.js';
+
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } from 'discord.js';
 import commandHandler from '../handlers/commandHandler.js';
 import eventHandler from '../handlers/eventHandler.js';
 import { getThumbnail } from '../utils/getThumbnail.js';
@@ -61,7 +62,121 @@ client.riffy.on("trackStart", async (player, track) => {
             });
         }
 
-        channel.send({ embeds: [embed], files: [attachment] }).catch(console.error);
+        const pauseButton = new ButtonBuilder()
+            .setCustomId('pause')
+            .setEmoji(emoji.pause)
+            .setStyle(ButtonStyle.Secondary);
+
+        const skipButton = new ButtonBuilder()
+            .setCustomId('skip')
+            .setEmoji(emoji.skip)
+            .setStyle(ButtonStyle.Primary);
+
+        const stopButton = new ButtonBuilder()
+            .setCustomId('stop')
+            .setEmoji(emoji.stop)
+            .setStyle(ButtonStyle.Danger);
+
+        const loopButton = new ButtonBuilder()
+            .setCustomId('loop')
+            .setEmoji(emoji.loop)
+            .setStyle(ButtonStyle.Success);
+
+        const shuffleButton = new ButtonBuilder()
+            .setCustomId('shuffle')
+            .setEmoji(emoji.shuffle)
+            .setStyle(ButtonStyle.Success);
+
+        const row = new ActionRowBuilder()
+            .addComponents(pauseButton, skipButton, stopButton, loopButton, shuffleButton);
+
+        const msg = await channel.send({ embeds: [embed], files: [attachment], components: [row] });
+
+        const collector = msg.createMessageComponentCollector({ 
+            time: track.info.length || 600000
+        });
+
+        collector.on('collect', async (interaction) => {
+            const member = interaction.member;
+
+            if (!member.voice.channel) {
+                return interaction.reply({ content: `${emoji.error} You need to be in a voice channel!`, ephemeral: true });
+            }
+
+            if (player.voiceChannel !== member.voice.channel.id) {
+                return interaction.reply({ content: `${emoji.error} You need to be in the same voice channel!`, ephemeral: true });
+            }
+
+            switch (interaction.customId) {
+                case 'pause':
+                    if (player.paused) {
+                        player.pause(false);
+                        await interaction.reply({ content: `${emoji.play} Resumed the music!`, ephemeral: true });
+                        
+                        pauseButton.setEmoji(emoji.pause);
+                        await msg.edit({ components: [row] });
+                    } else {
+                        player.pause(true);
+                        await interaction.reply({ content: `${emoji.pause} Paused the music!`, ephemeral: true });
+                        
+                        pauseButton.setEmoji(emoji.play);
+                        await msg.edit({ components: [row] });
+                    }
+                    break;
+
+                case 'skip':
+                    if (!player.queue.length && !player.current) {
+                        return interaction.reply({ content: `${emoji.error} No more songs in queue!`, ephemeral: true });
+                    }
+                    player.stop();
+                    await interaction.reply({ content: `${emoji.skip} Skipped the song!`, ephemeral: true });
+                    break;
+
+                case 'stop':
+                    player.queue.clear();
+                    player.stop();
+                    if (!player.twentyFourSeven) {
+                        player.destroy();
+                    }
+                    await interaction.reply({ content: `${emoji.stop} Stopped the music!`, ephemeral: true });
+                    collector.stop();
+                    break;
+
+                case 'loop':
+                    if (player.loop === 'none') {
+                        player.setLoop('track');
+                        await interaction.reply({ content: `${emoji.loop} Looping current track!`, ephemeral: true });
+                    } else if (player.loop === 'track') {
+                        player.setLoop('queue');
+                        await interaction.reply({ content: `${emoji.loop} Looping queue!`, ephemeral: true });
+                    } else {
+                        player.setLoop('none');
+                        await interaction.reply({ content: `${emoji.loop} Loop disabled!`, ephemeral: true });
+                    }
+                    break;
+
+                case 'shuffle':
+                    if (player.queue.length < 2) {
+                        return interaction.reply({ content: `${emoji.error} Not enough songs in queue to shuffle!`, ephemeral: true });
+                    }
+                    player.queue.shuffle();
+                    await interaction.reply({ content: `${emoji.shuffle} Shuffled the queue!`, ephemeral: true });
+                    break;
+            }
+        });
+
+        collector.on('end', async () => {
+            const disabledRow = new ActionRowBuilder()
+                .addComponents(
+                    pauseButton.setDisabled(true),
+                    skipButton.setDisabled(true),
+                    stopButton.setDisabled(true),
+                    loopButton.setDisabled(true),
+                    shuffleButton.setDisabled(true)
+                );
+            await msg.edit({ components: [disabledRow] }).catch(() => {});
+        });
+
     } catch (error) {
         console.error('Error creating music card:', error);
         
