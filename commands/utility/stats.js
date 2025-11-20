@@ -12,6 +12,15 @@ export default {
         const memUsage = process.memoryUsage();
         const totalMem = os.totalmem();
         const usedMem = memUsage.heapUsed;
+
+        const nodeStats = [];
+client.riffy.nodes.forEach(node => {
+    const status = node.connected ? '🟢 Online' : '🔴 Offline';
+    const players = Array.from(client.riffy.players.values()).filter(
+        p => p.node.name === node.name
+    ).length;
+    nodeStats.push(`**${node.name}**: ${status} (${players} players)`);
+});
         
         const memoryUsed = (usedMem / 1024 / 1024).toFixed(2);
         const memoryTotal = (totalMem / 1024 / 1024).toFixed(2);
@@ -50,8 +59,13 @@ export default {
                     inline: true
                 },
                 {
+    name: `🎵 Lavalink Nodes`,
+    value: nodeStats.length > 0 ? nodeStats.join('\n') : 'No nodes',
+    inline: false
+},
+                {
                     name: `<:emoji_37:1414635203934294138> Bot Stats`,
-                    value: [
+                     value: [
                         `**Guilds:** ${client.guilds.cache.size}`,
                         `**Users:** ${totalUsers.toLocaleString()}`,
                         `**Channels:** ${totalChannels}`,

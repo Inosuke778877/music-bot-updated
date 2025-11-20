@@ -33,10 +33,10 @@ client.riffy.on("trackStart", async (player, track) => {
             imageDarkness: 60,
             backgroundColor: '#070707',
             progress: 0,
-            progressColor: '#00FF00',
+            progressColor: '#ffffffff',
             progressBarColor: '#5F2D00',
             name: track.info.title.length > 30 ? track.info.title.substring(0, 30) + '...' : track.info.title,
-            nameColor: '#00FF00',
+            nameColor: '#ffffffff',
             author: track.info.author.length > 30 ? track.info.author.substring(0, 30) + '...' : track.info.author,
             authorColor: '#696969',
         });
