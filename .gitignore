@@ -9,6 +9,7 @@ dist
 *.tgz
 
 # code coverage
+SPICEFY.zip
 coverage
 *.lcov
 

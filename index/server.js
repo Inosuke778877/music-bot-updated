@@ -1,7 +1,11 @@
 import http from 'http';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { __dirname } from './client.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export function initializeServer(client, mongoose) {
     const server = http.createServer(async (req, res) => {

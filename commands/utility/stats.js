@@ -12,18 +12,9 @@ export default {
         const memUsage = process.memoryUsage();
         const totalMem = os.totalmem();
         const usedMem = memUsage.heapUsed;
-
-        const nodeStats = [];
-client.riffy.nodes.forEach(node => {
-    const status = node.connected ? '🟢 Online' : '🔴 Offline';
-    const players = Array.from(client.riffy.players.values()).filter(
-        p => p.node.name === node.name
-    ).length;
-    nodeStats.push(`**${node.name}**: ${status} (${players} players)`);
-});
         
         const memoryUsed = (usedMem / 1024 / 1024).toFixed(2);
-        const memoryTotal = (totalMem / 1024 / 1024).toFixed(2);
+        const memoryTotal = (totalMem / 1024 / 1024 / 1024).toFixed(2);
         const memoryPercent = ((usedMem / totalMem) * 100).toFixed(2);
 
         const totalUsers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
@@ -34,15 +25,39 @@ client.riffy.nodes.forEach(node => {
         let totalQueued = 0;
         let totalPlaying = 0;
 
-        let nodes = 1;
-
         client.riffy.players.forEach(player => {
             totalQueued += player.queue.length;
             if (player.playing) totalPlaying++;
         });
 
-        const cpuUsage = process.cpuUsage();
-        const cpuPercent = ((cpuUsage.user + cpuUsage.system) / 1000000).toFixed(2);
+        const nodeStats = [];
+        let onlineNodes = 0;
+        let offlineNodes = 0;
+
+        const allNodes = Array.from(client.riffy.nodeMap.values());
+        
+        allNodes.forEach((node) => {
+            const isConnected = node.connected === true;
+            const status = isConnected ? '🟢 Online' : '🔴 Offline';
+            
+            if (isConnected) {
+                onlineNodes++;
+            } else {
+                offlineNodes++;
+            }
+
+            const playersOnNode = Array.from(client.riffy.players.values()).filter(
+                p => p.node && p.node.name === node.name
+            ).length;
+
+            const parts = [`**${node.name}** ${status}`, `Players: ${playersOnNode}`];
+            
+            if (node.stats && node.stats.uptime) {
+                parts.push(`Uptime: ${formatUptime(node.stats.uptime / 1000)}`);
+            }
+
+            nodeStats.push(parts.join(' • '));
+        });
 
         const embed = createEmbed()
             .setTitle(`${emoji.info} ${client.user.username} Statistics`)
@@ -51,60 +66,55 @@ client.riffy.nodes.forEach(node => {
                 {
                     name: `${emoji.info} General`,
                     value: [
-                        `**Uptime:** ${uptime}`,
-                        `**Ping:** ${client.ws.ping}ms`,
-                        `**Node.js:** ${process.version}`,
-                        `**Discord.js:** v${djsVersion}`
+                        `${emoji.uptime} **Uptime:** ${uptime}`,
+                        `${emoji.ping} **Ping:** ${client.ws.ping}ms`,
+                        `${emoji.server} **Node.js:** ${process.version}`,
+                        `${emoji.commands} **Discord.js:** v${djsVersion}`
                     ].join('\n'),
                     inline: true
                 },
                 {
-    name: `🎵 Lavalink Nodes`,
-    value: nodeStats.length > 0 ? nodeStats.join('\n') : 'No nodes',
-    inline: false
-},
-                {
-                    name: `<:emoji_37:1414635203934294138> Bot Stats`,
-                     value: [
-                        `**Guilds:** ${client.guilds.cache.size}`,
-                        `**Users:** ${totalUsers.toLocaleString()}`,
-                        `**Channels:** ${totalChannels}`,
-                        `**Commands:** ${totalCommands}`
+                    name: `${emoji.server} Bot Stats`,
+                    value: [
+                        `${emoji.server} **Guilds:** ${client.guilds.cache.size}`,
+                        `${emoji.users} **Users:** ${totalUsers.toLocaleString()}`,
+                        `${emoji.channels} **Channels:** ${totalChannels}`,
+                        `${emoji.commands} **Commands:** ${totalCommands}`
                     ].join('\n'),
                     inline: true
                 },
                 {
                     name: `${emoji.music} Music Stats`,
                     value: [
-                        `**Active Players:** ${activePlayers}`,
-                        `**Playing Now:** ${totalPlaying}`,
-                        `**Queued Tracks:** ${totalQueued}`,
-                        `**Lavalink Nodes:** ${nodes}`
+                        `${emoji.play} **Active Players:** ${activePlayers}`,
+                        `${emoji.music} **Playing Now:** ${totalPlaying}`,
+                        `${emoji.queue} **Queued Tracks:** ${totalQueued}`,
+                        `${emoji.node} **Nodes:** ${onlineNodes} 🟢 / ${offlineNodes} 🔴`
                     ].join('\n'),
                     inline: true
                 },
                 {
-                    name: `<:discotoolsxyzicon5:1415193715420561471> System`,
+                    name: `${emoji.memory} System Resources`,
                     value: [
-                        `**Memory:** ${memoryUsed}MB / ${memoryTotal}MB`,
-                        `**Usage:** ${memoryPercent}%`,
-                        `**CPU:** ${cpuPercent}%`,
-                        `**Platform:** ${os.platform()}`
+                        `${emoji.memory} **Memory:** ${memoryUsed}MB / ${memoryTotal}GB`,
+                        `${emoji.memory} **Usage:** ${memoryPercent}%`,
+                        `${emoji.cpu} **Platform:** ${os.platform()}`,
+                        `${emoji.cpu} **Arch:** ${os.arch()}`
                     ].join('\n'),
                     inline: true
                 },
                 {
-                    name: `<:shuffle:1424004241625972807> System Info`,
+                    name: `${emoji.cpu} System Info`,
                     value: [
-                        `**OS:** ${os.type()} ${os.release()}`,
-                        `**CPU Cores:** ${os.cpus().length}`,
-                        `**CPU Model:** ${os.cpus()[0].model.split(' ').slice(0, 3).join(' ')}`,
-                        `**Arch:** ${os.arch()}`
+                        `${emoji.server} **OS:** ${os.type()} ${os.release()}`,
+                        `${emoji.cpu} **CPU Cores:** ${os.cpus().length}`,
+                        `${emoji.cpu} **CPU Model:** ${os.cpus()[0].model.split(' ').slice(0, 3).join(' ')}`,
+                        `${emoji.uptime} **System Uptime:** ${formatUptime(os.uptime())}`
                     ].join('\n'),
                     inline: true
                 },
                 {
-                    name: `${emoji.playlist} Sources`,
+                    name: `${emoji.music} Music Sources`,
                     value: [
                         `${emoji.youtube} YouTube`,
                         `${emoji.spotify} Spotify`,
@@ -119,6 +129,14 @@ client.riffy.nodes.forEach(node => {
                 iconURL: message.author.displayAvatarURL({ dynamic: true })
             })
             .setTimestamp();
+
+        if (nodeStats.length > 0) {
+            embed.addFields({
+                name: `${emoji.node} Lavalink Nodes (${allNodes.length})`,
+                value: nodeStats.join('\n'),
+                inline: false
+            });
+        }
 
         message.channel.send({ embeds: [embed] });
     }

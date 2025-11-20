@@ -25,5 +25,14 @@ export default {
     youtube: '<:youtube:1440723090509135995>',
     spotify: '<:spotify:1440723708338638859>',
     applemusic: '<:apple:1440723220469776515>',
-    deezer: '<:deezer:1440723528360923236>'
+    deezer: '<:deezer:1440723528360923236>',
+    server: '<:emoji_38:1414635366744588338>',
+    users: '<:emoji_37:1414635203934294138>',
+    channels: '<:discotoolsxyzicon3:1414897537982398506>',
+    commands: '<:emoji_27:1414633833009254580>',
+    memory: '<:discotoolsxyzicon5:1415193715420561471>',
+    cpu: '<:discotoolsxyzicon6:1415193713096785971>',
+    uptime: '<:discotoolsxyzicon4:1415193718193127474>',
+    ping: '<:emoji_20:1414630552484708413>',
+    node: '<:emoji_36:1414635011990360064>'
 };

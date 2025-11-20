@@ -20,6 +20,11 @@ function formatTime(ms) {
 }
 
 export async function initializeEvents(client) {
+    client.riffy.nodes.forEach(node => {
+    console.log('Node object keys:', Object.keys(node));
+    console.log('Node object:', node);
+});
+
 client.riffy.on("trackStart", async (player, track) => {
     const channel = client.channels.cache.get(player.textChannel);
     if (!channel) return;
